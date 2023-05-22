@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	connectDB()
 	r, err := etcd.NewEtcdRegistry([]string{"etcd:2379"}) // r should not be reused.
 	if err != nil {
 		log.Fatal(err)

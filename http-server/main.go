@@ -19,6 +19,7 @@ import (
 var cli imservice.Client
 
 func main() {
+	connectDB()
 	r, err := etcd.NewEtcdResolver([]string{"etcd:2379"})
 	if err != nil {
 		log.Fatal(err)
