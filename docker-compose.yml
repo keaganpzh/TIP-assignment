@@ -25,7 +25,7 @@ services:
     command: ["etcd", "--advertise-client-urls", "http://etcd:2379", "--listen-client-urls", "http://0.0.0.0:2379"]
     ports:
       - "2379:2379"
-  cache:
+  redis:
     image: redis:6.2-alpine
     environment:
       - ALLOW_EMPTY_PASSWORD=yes

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,5 +22,24 @@ func (rc *RedisClient) initClient(ctx context.Context, address, password string)
 	}
 
 	rc.cli = r
+	return nil
+}
+
+func (c *RedisClient) SaveMessage(ctx context.Context, roomID string, message *Message) error {
+	text, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	member := &redis.Z{
+		Score:  message.Timestamp,
+		Member: text,
+	}
+
+	_, err = c.cli.ZAdd(ctx, roomID, *member).Result()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
