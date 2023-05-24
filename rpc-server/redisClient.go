@@ -32,7 +32,7 @@ func (c *RedisClient) SaveMessage(ctx context.Context, roomID string, message *M
 	}
 
 	member := &redis.Z{
-		Score:  message.Timestamp,
+		Score:  float64(message.Timestamp),
 		Member: text,
 	}
 
