@@ -25,7 +25,7 @@ func (rc *RedisClient) initClient(ctx context.Context, address, password string)
 	return nil
 }
 
-func (c *RedisClient) SaveMessage(ctx context.Context, roomID string, message *Message) error {
+func (rc *RedisClient) SaveMessage(ctx context.Context, roomID string, message *Message) error {
 	text, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (c *RedisClient) SaveMessage(ctx context.Context, roomID string, message *M
 		Member: text,
 	}
 
-	_, err = c.cli.ZAdd(ctx, roomID, *member).Result()
+	_, err = rc.cli.ZAdd(ctx, roomID, *member).Result()
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (c *RedisClient) SaveMessage(ctx context.Context, roomID string, message *M
 	return nil
 }
 
-func (c *RedisClient) GetMessagesByRoomID(ctx context.Context, roomID string, start, end int64, reverse bool) ([]*Message, error) {
+func (rc *RedisClient) GetMessagesByRoomID(ctx context.Context, roomID string, start, end int64, reverse bool) ([]*Message, error) {
 	var (
 		rawMessages []string
 		messages    []*Message
@@ -52,12 +52,12 @@ func (c *RedisClient) GetMessagesByRoomID(ctx context.Context, roomID string, st
 	)
 
 	if reverse {
-		rawMessages, err = c.cli.ZRevRange(ctx, roomID, start, end).Result()
+		rawMessages, err = rc.cli.ZRevRange(ctx, roomID, start, end).Result()
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		rawMessages, err = c.cli.ZRange(ctx, roomID, start, end).Result()
+		rawMessages, err = rc.cli.ZRange(ctx, roomID, start, end).Result()
 		if err != nil {
 			return nil, err
 		}

@@ -15,7 +15,7 @@ type IMServiceImpl struct{}
 func validateSendRequest(req *rpc.SendRequest) error {
 	senders := strings.Split(req.Message.Chat, ":")
 	if len(senders) != 2 {
-		err := fmt.Errorf("invalid chat ID '%s', should be user1:user2", req.Message.GetChat())
+		err := fmt.Errorf("validate error: invalid chat ID '%s', should be user1:user2", req.Message.GetChat())
 		return err
 	}
 	sender1, sender2 := senders[0], senders[1]
@@ -27,7 +27,8 @@ func validateSendRequest(req *rpc.SendRequest) error {
 }
 
 func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.SendResponse, error) {
-	if err := validateSendRequest(req); err != nil {
+	err := validateSendRequest(req)
+	if err != nil {
 		return nil, err
 	}
 	timestamp := time.Now().Unix()
@@ -39,9 +40,9 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 	roomID, _ := getRoomID(req.Message.GetChat())
 
-	err := rdb.SaveMessage(ctx, roomID, message)
-	if err != nil {
-		return nil, err
+	err2 := rdb.SaveMessage(ctx, roomID, message)
+	if err2 != nil {
+		return nil, err2
 	}
 
 	resp := rpc.NewSendResponse()
@@ -53,6 +54,10 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 	roomID, err := getRoomID(req.GetChat())
 	if err != nil {
 		return nil, err
+	}
+	limit := int64(req.GetLimit())
+	if limit == 0 {
+		limit = 10 // default limit 10
 	}
 	start := req.GetCursor()
 	end := start + int64(req.GetLimit())
@@ -94,7 +99,7 @@ func getRoomID(chat string) (string, error) {
 	lowercase := strings.ToLower(chat)
 	senders := strings.Split(lowercase, ":")
 	if len(senders) != 2 {
-		err := fmt.Errorf("invalid chat ID '%s', should be user1:user2", chat)
+		err := fmt.Errorf("roomID error: invalid chat ID '%s', should be user1:user2", chat)
 		return "", err
 	}
 
