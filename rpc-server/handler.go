@@ -57,10 +57,10 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 	}
 	limit := int64(req.GetLimit())
 	if limit == 0 {
-		limit = 10 // default limit 10
+		limit = 10
 	}
 	start := req.GetCursor()
-	end := start + limit // did not minus 1 on purpose for hasMore check later on
+	end := start + limit
 
 	messages, err := rdb.GetMessagesByRoomID(ctx, roomID, start, end, req.GetReverse())
 	if err != nil {
@@ -73,10 +73,9 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 	hasMore := false
 	for _, msg := range messages {
 		if counter+1 > limit {
-			// having extra value here means it has more data
 			hasMore = true
 			nextCursor = end
-			break // do not return the last message
+			break
 		}
 		temp := &rpc.Message{
 			Chat:     req.GetChat(),
